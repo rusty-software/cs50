@@ -6,6 +6,11 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 512
 VIRTUAL_HEIGHT = 288
 
+BACKGROUND_SCROLL_SPEED = 30
+GROUND_SCROLL_SPEED = 60
+
+BACKGROUND_LOOPING_POINT = 413
+
 local background = love.graphics.newImage('background.png')
 local backgroundScroll = 0
 local ground = love.graphics.newImage('ground.png')
@@ -21,6 +26,14 @@ function love.load()
     fullscreen = false,
     resizable = true
   })
+end
+
+function love.update(dt)
+  backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt)
+      % BACKGROUND_LOOPING_POINT
+
+  groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt)
+      % VIRTUAL_WIDTH
 end
 
 function love.resize(w, h)
