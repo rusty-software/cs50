@@ -17,6 +17,8 @@ PIPE_HEIGHT = 288
 BIRD_WIDTH = 38
 BIRD_HEIGHT = 24
 
+local spawnTime = 2
+
 function PlayState:init()
   self.bird = Bird()
   self.pipePairs = {}
@@ -32,7 +34,7 @@ function PlayState:update(dt)
   self.timer = self.timer + dt
 
   -- spawn a new pipe pair every second and a half
-  if self.timer > 2 then
+  if self.timer > spawnTime then
     -- modify the last Y coordinate we placed so pipe gaps aren't too far apart
     -- no higher than 10 pixels below the top edge of the screen,
     -- and no lower than a gap length (90 pixels) from the bottom
@@ -45,6 +47,7 @@ function PlayState:update(dt)
 
     -- reset timer
     self.timer = 0
+    spawnTime = math.random(2, 6)
   end
 
   -- for every pair of pipes..
