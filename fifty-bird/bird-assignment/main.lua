@@ -37,6 +37,7 @@ require 'StateMachine'
 
 require 'states/BaseState'
 require 'states/CountdownState'
+require 'states/PauseState'
 require 'states/PlayState'
 require 'states/ScoreState'
 require 'states/TitleScreenState'
@@ -67,6 +68,8 @@ local BACKGROUND_LOOPING_POINT = 413
 -- global variable we can use to scroll the map
 scrolling = true
 
+isPause = false
+
 function love.load()
   -- initialize our nearest-neighbor filter
   love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -90,6 +93,8 @@ function love.load()
     ['explosion'] = love.audio.newSource('explosion.wav', 'static'),
     ['hurt'] = love.audio.newSource('hurt.wav', 'static'),
     ['score'] = love.audio.newSource('score.wav', 'static'),
+    -- TODO: unique audio
+    ['pause'] = love.audio.newSource('hurt.wav', 'static'),
 
     -- https://freesound.org/people/xsgianni/sounds/388079/
     ['music'] = love.audio.newSource('marios_way.mp3', 'static')
@@ -111,7 +116,8 @@ function love.load()
     ['title'] = function() return TitleScreenState() end,
     ['countdown'] = function() return CountdownState() end,
     ['play'] = function() return PlayState() end,
-    ['score'] = function() return ScoreState() end
+    ['score'] = function() return ScoreState() end,
+    ['pause'] = function() return PauseState() end
   }
   gStateMachine:change('title')
 
@@ -155,9 +161,12 @@ function love.mouse.wasPressed(button)
 end
 
 function love.update(dt)
-  if scrolling then
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+  if not isPaused then
+    if scrolling then
+      backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+      groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+    end
+
   end
 
   gStateMachine:update(dt)

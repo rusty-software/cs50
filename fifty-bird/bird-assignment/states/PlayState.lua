@@ -30,6 +30,11 @@ function PlayState:init()
 end
 
 function PlayState:update(dt)
+
+  if love.keyboard.wasPressed('p') then
+    gStateMachine:change('pause')
+  end
+
   -- update timer for pipe spawning
   self.timer = self.timer + dt
 
