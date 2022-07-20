@@ -19,6 +19,8 @@ BIRD_HEIGHT = 24
 
 local spawnTime = 2
 
+local isPaused = false
+
 function PlayState:init()
   self.bird = Bird()
   self.pipePairs = {}
@@ -29,10 +31,27 @@ function PlayState:init()
   self.lastY = -PIPE_HEIGHT + math.random(80) + 20
 end
 
+local function handlePause()
+  isPaused = not isPaused
+
+  if isPaused then
+    sounds['music']:pause()
+    sounds['pause']:play()
+    scrolling = false
+  else
+    scrolling = true
+    sounds['music']:play()
+  end
+end
+
 function PlayState:update(dt)
 
   if love.keyboard.wasPressed('p') then
-    gStateMachine:change('pause')
+    handlePause()
+  end
+
+  if isPaused then
+    return
   end
 
   -- update timer for pipe spawning
@@ -117,6 +136,10 @@ function PlayState:render()
   love.graphics.setFont(flappyFont)
   love.graphics.print('Score: ' .. tostring(self.score), 8, 8)
 
+  if isPaused then
+    love.graphics.setFont(hugeFont)
+    love.graphics.printf("PAUSED", 0, 120, VIRTUAL_WIDTH, 'center')
+  end
   self.bird:render()
 end
 
