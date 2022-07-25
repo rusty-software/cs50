@@ -184,19 +184,6 @@ function AABBCollides(source, target)
       or below(source, target) then
     return false
   end
+
   return true
-
-  -- if source.x > target.x + target.width -- source's left edge is to the right of target's right
-  --     or target.x > source.x + source.width -- target's left edge is to the right of source's left
-  -- then
-  --   return false
-  -- end
-
-  -- if source.y > target.y + target.height -- source's top edge is below target's bottom
-  --     or target.y > source.y + source.height -- target's top edge is below source's bottom
-  -- then
-  --   return false
-  -- end
-
-  -- return true
 end

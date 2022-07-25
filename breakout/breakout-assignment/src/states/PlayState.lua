@@ -303,6 +303,7 @@ function PlayState:update(dt)
         highScores = self.highScores
       })
     else
+      self.paddle:reduceSize()
       gStateMachine:change('serve', {
         paddle = self.paddle,
         bricks = self.bricks,
