@@ -29,8 +29,8 @@ function PlayState:enter(params)
   self.ball = params.ball
   self.level = params.level
 
-  self.recoverPoints = 5000
-  self.enlargePoints = 500
+  self.recoverPoints = params.recoverPoints or 5000
+  self.enlargePoints = params.enlargePoints or 2500
 
   -- give ball random starting velocity
   self.ball.dx = math.random(-200, 200)
@@ -266,25 +266,26 @@ function PlayState:update(dt)
                 score = self.score,
                 highScores = self.highScores,
                 ball = self.ball,
-                recoverPoints = self.recoverPoints
+                recoverPoints = self.recoverPoints,
+                enlargePoints = self.enlargePoints
               })
             end
 
             -- if we have enough points, recover a point of health
             if self.score > self.recoverPoints then
-              -- can't go above 3 health
-              self.health = math.min(3, self.health + 1)
+              if self.health < 3 then
+                self.health = self.health + 1
+                -- play recover sound effect
+                gSounds['recover']:play()
+              end
 
               -- multiply recover points by 2
               self.recoverPoints = math.min(100000, self.recoverPoints * 2)
-
-              -- play recover sound effect
-              gSounds['recover']:play()
             end
 
             if self.score > self.enlargePoints then
               self.paddle:enlargeSize()
-              self.enlargePoints = math.max(100000, self.enlargePoints * 2)
+              self.enlargePoints = math.min(25000, self.enlargePoints * 2)
             end
 
             handleBallBrickCollision(ball, brick)
@@ -317,7 +318,8 @@ function PlayState:update(dt)
         score = self.score,
         highScores = self.highScores,
         level = self.level,
-        recoverPoints = self.recoverPoints
+        recoverPoints = self.recoverPoints,
+        enlargePoints = self.enlargePoints
       })
     end
   end
