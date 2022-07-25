@@ -83,3 +83,8 @@ function Paddle:reduceSize()
   self.size = math.max(1, self.size - 1)
   self.width = math.max(32, self.width - 32)
 end
+
+function Paddle:enlargeSize()
+  self.size = math.min(4, self.size + 1)
+  self.width = math.min(128, self.width + 32)
+end
