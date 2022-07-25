@@ -37,8 +37,17 @@ function PlayState:enter(params)
 
   self.powerUps = {}
   -- manage ball via a collection, since a power up can add to the ball count
-  self.ball.inPlay = true
   self.balls = { self.ball }
+
+  self:setNextPowerupTime()
+end
+
+--[[
+  Given a self ref, sets the next powerup time to a random value between 10 
+  and 15 seconds in the future. 
+]]
+function PlayState:setNextPowerupTime()
+  self.nextPowerupTime = os.time() + math.random(10, 15)
 end
 
 --[[
@@ -55,6 +64,7 @@ function PlayState:shouldSpawnPowerUp(params)
   end
   return self.powerUps[POWERUP_MULTIBALL] == nil
       and ballCount <= 1
+      and os.time() > self.nextPowerupTime
 end
 
 --[[
@@ -161,11 +171,17 @@ end
   out.
 ]]
 function PlayState:updateBallsInPlay()
+  local inPlayCount = 0
   for _, ball in pairs(self.balls) do
     if ball.inPlay and ball.y >= VIRTUAL_HEIGHT then
       gSounds['hurt']:play()
       ball.inPlay = false
+    elseif ball.inPlay then
+      inPlayCount = inPlayCount + 1
     end
+  end
+  if inPlayCount == 1 and self.nextPowerupTime < os.time() then
+    self:setNextPowerupTime()
   end
 end
 
@@ -206,12 +222,16 @@ function PlayState:update(dt)
   for _, ball in pairs(self.balls) do
     ball:update(dt)
   end
-  for _, powerup in pairs(self.powerUps) do
+  for k, powerup in pairs(self.powerUps) do
     powerup:update(dt)
     if powerup:collides(self.paddle) then
       powerup.inPlay = false
-      self.powerUps[powerup] = nil
+      self.powerUps[k] = nil
       self:enactPowerUp(powerup.powerUpType)
+    elseif powerup.y > VIRTUAL_HEIGHT then
+      powerup.inPlay = false
+      self.powerUps[k] = nil
+      self:setNextPowerupTime()
     end
   end
 
