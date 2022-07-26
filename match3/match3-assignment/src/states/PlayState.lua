@@ -67,7 +67,7 @@ function PlayState:enter(params)
   self.score = params.score or 0
 
   -- score we have to reach to get to the next level
-  self.scoreGoal = self.level * 1.25 * 1000
+  self.scoreGoal = self.level * 1.25 * 10
 end
 
 function PlayState:update(dt)
@@ -194,8 +194,11 @@ function PlayState:calculateMatches()
     gSounds['match']:play()
 
     -- add score for each match
-    for k, match in pairs(matches) do
-      self.score = self.score + #match * 50
+    for _, match in pairs(matches) do
+      for _, tile in pairs(match) do
+        self.score = self.score + (tile.variety * 50)
+      end
+
       self.timer = self.timer + #match
     end
 

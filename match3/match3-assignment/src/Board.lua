@@ -11,37 +11,38 @@
     sets of three horizontally or vertically.
 ]]
 
-Board = Class{}
+Board = Class {}
 
-function Board:init(x, y)
-    self.x = x
-    self.y = y
-    self.matches = {}
+function Board:init(x, y, level)
+  self.x = x
+  self.y = y
+  self.level = level
+  self.matches = {}
 
-    self:initializeTiles()
+  self:initializeTiles()
 end
 
 function Board:initializeTiles()
-    self.tiles = {}
+  self.tiles = {}
 
-    for tileY = 1, 8 do
-        
-        -- empty table that will serve as a new row
-        table.insert(self.tiles, {})
+  for tileY = 1, 8 do
 
-        for tileX = 1, 8 do
-            
-            -- create a new tile at X,Y with a random color and variety
-            table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(6)))
-        end
+    -- empty table that will serve as a new row
+    table.insert(self.tiles, {})
+
+    for tileX = 1, 8 do
+
+      -- create a new tile at X,Y with a random color and variety
+      table.insert(self.tiles[tileY], Tile(tileX, tileY, math.random(18), math.random(math.min(self.level, 6))))
     end
+  end
 
-    while self:calculateMatches() do
-        
-        -- recursively initialize if matches were returned so we always have
-        -- a matchless board on start
-        self:initializeTiles()
-    end
+  while self:calculateMatches() do
+
+    -- recursively initialize if matches were returned so we always have
+    -- a matchless board on start
+    self:initializeTiles()
+  end
 end
 
 --[[
@@ -50,115 +51,115 @@ end
     last two haven't been a match.
 ]]
 function Board:calculateMatches()
-    local matches = {}
+  local matches = {}
 
-    -- how many of the same color blocks in a row we've found
-    local matchNum = 1
+  -- how many of the same color blocks in a row we've found
+  local matchNum = 1
 
-    -- horizontal matches first
-    for y = 1, 8 do
-        local colorToMatch = self.tiles[y][1].color
+  -- horizontal matches first
+  for y = 1, 8 do
+    local colorToMatch = self.tiles[y][1].color
 
-        matchNum = 1
-        
-        -- every horizontal tile
-        for x = 2, 8 do
-            
-            -- if this is the same color as the one we're trying to match...
-            if self.tiles[y][x].color == colorToMatch then
-                matchNum = matchNum + 1
-            else
-                
-                -- set this as the new color we want to watch for
-                colorToMatch = self.tiles[y][x].color
+    matchNum = 1
 
-                -- if we have a match of 3 or more up to now, add it to our matches table
-                if matchNum >= 3 then
-                    local match = {}
+    -- every horizontal tile
+    for x = 2, 8 do
 
-                    -- go backwards from here by matchNum
-                    for x2 = x - 1, x - matchNum, -1 do
-                        
-                        -- add each tile to the match that's in that match
-                        table.insert(match, self.tiles[y][x2])
-                    end
+      -- if this is the same color as the one we're trying to match...
+      if self.tiles[y][x].color == colorToMatch then
+        matchNum = matchNum + 1
+      else
 
-                    -- add this match to our total matches table
-                    table.insert(matches, match)
-                end
+        -- set this as the new color we want to watch for
+        colorToMatch = self.tiles[y][x].color
 
-                matchNum = 1
-
-                -- don't need to check last two if they won't be in a match
-                if x >= 7 then
-                    break
-                end
-            end
-        end
-
-        -- account for the last row ending with a match
+        -- if we have a match of 3 or more up to now, add it to our matches table
         if matchNum >= 3 then
-            local match = {}
-            
-            -- go backwards from end of last row by matchNum
-            for x = 8, 8 - matchNum + 1, -1 do
-                table.insert(match, self.tiles[y][x])
-            end
+          local match = {}
 
-            table.insert(matches, match)
+          -- go backwards from here by matchNum
+          for x2 = x - 1, x - matchNum, -1 do
+
+            -- add each tile to the match that's in that match
+            table.insert(match, self.tiles[y][x2])
+          end
+
+          -- add this match to our total matches table
+          table.insert(matches, match)
         end
-    end
-
-    -- vertical matches
-    for x = 1, 8 do
-        local colorToMatch = self.tiles[1][x].color
 
         matchNum = 1
 
-        -- every vertical tile
-        for y = 2, 8 do
-            if self.tiles[y][x].color == colorToMatch then
-                matchNum = matchNum + 1
-            else
-                colorToMatch = self.tiles[y][x].color
-
-                if matchNum >= 3 then
-                    local match = {}
-
-                    for y2 = y - 1, y - matchNum, -1 do
-                        table.insert(match, self.tiles[y2][x])
-                    end
-
-                    table.insert(matches, match)
-                end
-
-                matchNum = 1
-
-                -- don't need to check last two if they won't be in a match
-                if y >= 7 then
-                    break
-                end
-            end
+        -- don't need to check last two if they won't be in a match
+        if x >= 7 then
+          break
         end
-
-        -- account for the last column ending with a match
-        if matchNum >= 3 then
-            local match = {}
-            
-            -- go backwards from end of last row by matchNum
-            for y = 8, 8 - matchNum + 1, -1 do
-                table.insert(match, self.tiles[y][x])
-            end
-
-            table.insert(matches, match)
-        end
+      end
     end
 
-    -- store matches for later reference
-    self.matches = matches
+    -- account for the last row ending with a match
+    if matchNum >= 3 then
+      local match = {}
 
-    -- return matches table if > 0, else just return false
-    return #self.matches > 0 and self.matches or false
+      -- go backwards from end of last row by matchNum
+      for x = 8, 8 - matchNum + 1, -1 do
+        table.insert(match, self.tiles[y][x])
+      end
+
+      table.insert(matches, match)
+    end
+  end
+
+  -- vertical matches
+  for x = 1, 8 do
+    local colorToMatch = self.tiles[1][x].color
+
+    matchNum = 1
+
+    -- every vertical tile
+    for y = 2, 8 do
+      if self.tiles[y][x].color == colorToMatch then
+        matchNum = matchNum + 1
+      else
+        colorToMatch = self.tiles[y][x].color
+
+        if matchNum >= 3 then
+          local match = {}
+
+          for y2 = y - 1, y - matchNum, -1 do
+            table.insert(match, self.tiles[y2][x])
+          end
+
+          table.insert(matches, match)
+        end
+
+        matchNum = 1
+
+        -- don't need to check last two if they won't be in a match
+        if y >= 7 then
+          break
+        end
+      end
+    end
+
+    -- account for the last column ending with a match
+    if matchNum >= 3 then
+      local match = {}
+
+      -- go backwards from end of last row by matchNum
+      for y = 8, 8 - matchNum + 1, -1 do
+        table.insert(match, self.tiles[y][x])
+      end
+
+      table.insert(matches, match)
+    end
+  end
+
+  -- store matches for later reference
+  self.matches = matches
+
+  -- return matches table if > 0, else just return false
+  return #self.matches > 0 and self.matches or false
 end
 
 --[[
@@ -166,13 +167,13 @@ end
     them to nil, then setting self.matches to nil.
 ]]
 function Board:removeMatches()
-    for k, match in pairs(self.matches) do
-        for k, tile in pairs(match) do
-            self.tiles[tile.gridY][tile.gridX] = nil
-        end
+  for k, match in pairs(self.matches) do
+    for k, tile in pairs(match) do
+      self.tiles[tile.gridY][tile.gridX] = nil
     end
+  end
 
-    self.matches = nil
+  self.matches = nil
 end
 
 --[[
@@ -180,85 +181,85 @@ end
     contains tweening information for these new tiles.
 ]]
 function Board:getFallingTiles()
-    -- tween table, with tiles as keys and their x and y as the to values
-    local tweens = {}
+  -- tween table, with tiles as keys and their x and y as the to values
+  local tweens = {}
 
-    -- for each column, go up tile by tile till we hit a space
-    for x = 1, 8 do
-        local space = false
-        local spaceY = 0
+  -- for each column, go up tile by tile till we hit a space
+  for x = 1, 8 do
+    local space = false
+    local spaceY = 0
 
-        local y = 8
-        while y >= 1 do
-            
-            -- if our last tile was a space...
-            local tile = self.tiles[y][x]
-            
-            if space then
-                
-                -- if the current tile is *not* a space, bring this down to the lowest space
-                if tile then
-                    
-                    -- put the tile in the correct spot in the board and fix its grid positions
-                    self.tiles[spaceY][x] = tile
-                    tile.gridY = spaceY
+    local y = 8
+    while y >= 1 do
 
-                    -- set its prior position to nil
-                    self.tiles[y][x] = nil
+      -- if our last tile was a space...
+      local tile = self.tiles[y][x]
 
-                    -- tween the Y position to 32 x its grid position
-                    tweens[tile] = {
-                        y = (tile.gridY - 1) * 32
-                    }
+      if space then
 
-                    -- set Y to spaceY so we start back from here again
-                    space = false
-                    y = spaceY
+        -- if the current tile is *not* a space, bring this down to the lowest space
+        if tile then
 
-                    -- set this back to 0 so we know we don't have an active space
-                    spaceY = 0
-                end
-            elseif tile == nil then
-                space = true
-                
-                -- if we haven't assigned a space yet, set this to it
-                if spaceY == 0 then
-                    spaceY = y
-                end
-            end
+          -- put the tile in the correct spot in the board and fix its grid positions
+          self.tiles[spaceY][x] = tile
+          tile.gridY = spaceY
 
-            y = y - 1
+          -- set its prior position to nil
+          self.tiles[y][x] = nil
+
+          -- tween the Y position to 32 x its grid position
+          tweens[tile] = {
+            y = (tile.gridY - 1) * 32
+          }
+
+          -- set Y to spaceY so we start back from here again
+          space = false
+          y = spaceY
+
+          -- set this back to 0 so we know we don't have an active space
+          spaceY = 0
         end
-    end
+      elseif tile == nil then
+        space = true
 
-    -- create replacement tiles at the top of the screen
-    for x = 1, 8 do
-        for y = 8, 1, -1 do
-            local tile = self.tiles[y][x]
-
-            -- if the tile is nil, we need to add a new one
-            if not tile then
-
-                -- new tile with random color and variety
-                local tile = Tile(x, y, math.random(18), math.random(6))
-                tile.y = -32
-                self.tiles[y][x] = tile
-
-                -- create a new tween to return for this tile to fall down
-                tweens[tile] = {
-                    y = (tile.gridY - 1) * 32
-                }
-            end
+        -- if we haven't assigned a space yet, set this to it
+        if spaceY == 0 then
+          spaceY = y
         end
-    end
+      end
 
-    return tweens
+      y = y - 1
+    end
+  end
+
+  -- create replacement tiles at the top of the screen
+  for x = 1, 8 do
+    for y = 8, 1, -1 do
+      local tile = self.tiles[y][x]
+
+      -- if the tile is nil, we need to add a new one
+      if not tile then
+
+        -- new tile with random color and variety
+        local tile = Tile(x, y, math.random(18), math.random(6))
+        tile.y = -32
+        self.tiles[y][x] = tile
+
+        -- create a new tween to return for this tile to fall down
+        tweens[tile] = {
+          y = (tile.gridY - 1) * 32
+        }
+      end
+    end
+  end
+
+  return tweens
 end
 
 function Board:render()
-    for y = 1, #self.tiles do
-        for x = 1, #self.tiles[1] do
-            self.tiles[y][x]:render(self.x, self.y)
-        end
+  for y = 1, #self.tiles do
+    for x = 1, #self.tiles[1] do
+      self.tiles[y][x]:render(self.x, self.y)
     end
+  end
 end
