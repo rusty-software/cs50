@@ -113,18 +113,34 @@ function PlayState:update(dt)
       for _, tileTable in pairs(self.board.tiles) do
         for _, tile in pairs(tileTable) do
           if tile:wasClicked(x, y) then
-            print("mouse x, y: " .. tostring(x) .. ", " .. tostring(y))
-            print("tile.x, y: " .. tostring(tile.x) .. ", " .. tostring(tile.y))
+            -- print("mouse x, y: " .. tostring(x) .. ", " .. tostring(y))
+            -- print("tile.x, y: " .. tostring(tile.x) .. ", " .. tostring(tile.y))
 
             if not self.highlightedTile then
               self.highlightedTile = tile
             elseif self.highlightedTile == tile then
               self.highlightedTile = nil
             else
-              -- if the clicked tile is not adjacent to the highlighted tile
+              -- if the clicked tile is adjacent to the highlighted tile
               if self.board:adjacentTo(self.highlightedTile, tile) then
                 -- swap
-                print("adjacent")
+                local newTile = tile
+
+                local tempX = self.highlightedTile.gridX
+                local tempY = self.highlightedTile.gridY
+
+                self.highlightedTile.gridX = newTile.gridX
+                self.highlightedTile.gridY = newTile.gridY
+
+                newTile.gridX = tempX
+                newTile.gridY = tempY
+
+                Timer.tween(0.1, {
+                  [self.highlightedTile] = { x = newTile.x, y = newTile.y },
+                  [newTile] = { x = self.highlightedTile.x, y = self.highlightedTile.y }
+                }):finish(function()
+                  self:calculateMatches()
+                end)
               else
                 self.highlightedTile = tile
               end
