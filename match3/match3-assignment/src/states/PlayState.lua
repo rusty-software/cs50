@@ -123,9 +123,9 @@ function PlayState:update(dt)
             else
               -- if the clicked tile is adjacent to the highlighted tile
               if self.board:adjacentTo(self.highlightedTile, tile) then
-                -- swap
                 local newTile = tile
 
+                -- swap grid positions
                 local tempX = self.highlightedTile.gridX
                 local tempY = self.highlightedTile.gridY
 
@@ -135,12 +135,18 @@ function PlayState:update(dt)
                 newTile.gridX = tempX
                 newTile.gridY = tempY
 
+                -- swap tile table positions
+                self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] = self.highlightedTile
+                self.board.tiles[newTile.gridY][newTile.gridX] = newTile
+
                 Timer.tween(0.1, {
                   [self.highlightedTile] = { x = newTile.x, y = newTile.y },
                   [newTile] = { x = self.highlightedTile.x, y = self.highlightedTile.y }
                 }):finish(function()
                   self:calculateMatches()
                 end)
+
+                self.highlightedTile = nil
               else
                 self.highlightedTile = tile
               end
@@ -214,6 +220,7 @@ function PlayState:update(dt)
             :finish(function()
               self:calculateMatches()
             end)
+
       end
     end
   end
