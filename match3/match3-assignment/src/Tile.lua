@@ -19,9 +19,15 @@ function Tile:init(x, y, color, variety)
   self.gridX = x
   self.gridY = y
 
+  self.width = 32
+  self.height = 32
+
   -- coordinate positions
-  self.x = (self.gridX - 1) * 32
-  self.y = (self.gridY - 1) * 32
+  self.x = (self.gridX - 1) * self.width
+  self.y = (self.gridY - 1) * self.height
+
+  self.containerX = 0
+  self.containerY = 0
 
   -- tile appearance/points
   self.color = color
@@ -31,6 +37,8 @@ function Tile:init(x, y, color, variety)
 end
 
 function Tile:render(x, y)
+  self.containerX = x
+  self.containerY = y
 
   -- draw shadow
   love.graphics.setColor(34, 32, 52, 255)
@@ -64,4 +72,14 @@ function Tile:render(x, y)
     love.graphics.setLineWidth(preLineWidth)
     love.graphics.setColor(255, 255, 255, 255)
   end
+end
+
+--[[
+  Given a self ref and a clicked x and y, returns true if the tile was clicked.
+]]
+function Tile:wasClicked(x, y)
+  return x >= self.containerX + self.x
+      and x <= self.containerX + self.x + self.width
+      and y >= self.containerY + self.y
+      and y <= self.containerY + self.y + self.height
 end

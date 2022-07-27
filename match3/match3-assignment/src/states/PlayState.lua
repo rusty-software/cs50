@@ -70,6 +70,7 @@ function PlayState:enter(params)
   self.scoreGoal = self.level * 1.25 * 1000
 end
 
+local next = next
 function PlayState:update(dt)
   if love.keyboard.wasPressed('escape') then
     love.event.quit()
@@ -106,6 +107,22 @@ function PlayState:update(dt)
   end
 
   if self.canInput then
+    if next(love.mouse.buttonClicked) ~= nil then
+      local x = love.mouse.buttonClicked[1][1]
+      local y = love.mouse.buttonClicked[1][2]
+      for _, tileTable in pairs(self.board.tiles) do
+        for _, tile in pairs(tileTable) do
+          if tile:wasClicked(x, y) then
+            -- move highlight
+
+            -- if selected then unselect
+            -- elseif not adjacent to selected then blep
+            -- else swap
+          end
+        end
+      end
+    end
+
     -- move cursor around based on bounds of grid, playing sounds
     if love.keyboard.wasPressed('up') then
       self.boardHighlightY = math.max(0, self.boardHighlightY - 1)
