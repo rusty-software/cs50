@@ -294,3 +294,20 @@ function Board:render()
     end
   end
 end
+
+local function horizontallyAdjacent(tile1, tile2)
+  return math.abs(tile1.x - tile2.x) == tile1.width and tile1.y == tile2.y
+end
+
+local function veritcallyAdjacent(tile1, tile2)
+  return math.abs(tile1.y - tile2.y) == tile1.height and tile1.x == tile2.x
+end
+
+function Board:adjacentTo(tile1, tile2)
+  print("tile1 x, y: " .. tostring(tile1.x) .. ", " .. tostring(tile1.y))
+  print("tile1 containerX, Y: " .. tostring(tile1.containerX) .. ", " .. tostring(tile1.containerY))
+  print("tile2 x, y: " .. tostring(tile2.x) .. ", " .. tostring(tile2.y))
+  print("tile2 containerX, Y: " .. tostring(tile2.containerX) .. ", " .. tostring(tile2.containerY))
+
+  return horizontallyAdjacent(tile1, tile2) or veritcallyAdjacent(tile1, tile2)
+end

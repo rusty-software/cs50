@@ -113,11 +113,22 @@ function PlayState:update(dt)
       for _, tileTable in pairs(self.board.tiles) do
         for _, tile in pairs(tileTable) do
           if tile:wasClicked(x, y) then
-            -- move highlight
+            print("mouse x, y: " .. tostring(x) .. ", " .. tostring(y))
+            print("tile.x, y: " .. tostring(tile.x) .. ", " .. tostring(tile.y))
 
-            -- if selected then unselect
-            -- elseif not adjacent to selected then blep
-            -- else swap
+            if not self.highlightedTile then
+              self.highlightedTile = tile
+            elseif self.highlightedTile == tile then
+              self.highlightedTile = nil
+            else
+              -- if the clicked tile is not adjacent to the highlighted tile
+              if self.board:adjacentTo(self.highlightedTile, tile) then
+                -- swap
+                print("adjacent")
+              else
+                self.highlightedTile = tile
+              end
+            end
           end
         end
       end
