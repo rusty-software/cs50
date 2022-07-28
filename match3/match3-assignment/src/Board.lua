@@ -14,12 +14,12 @@
 Board = Class {}
 
 local YELLOW = 1
-local GREEN = 5
-local BLUE = 6
-local PURPLE = 9
-local RED = 12
-local ORANGE = 15
-local GRAY = 16
+local RED = 6
+local GREEN = 9
+local BLUE = 11
+local ORANGE = 12
+local GRAY = 14
+local PURPLE = 17
 
 function Board:init(x, y, level)
   self.x = x
@@ -48,7 +48,6 @@ function Board:initializeTiles()
     table.insert(self.tiles, {})
 
     for tileX = 1, 8 do
-
       -- create a new tile at X,Y with a random color and variety
       table.insert(self.tiles[tileY],
         Tile(tileX,
@@ -293,7 +292,10 @@ function Board:getFallingTiles()
       if not tile then
 
         -- new tile with random color and variety
-        local tile = Tile(x, y, math.random(18), math.random(math.min(self.level, 6)))
+        local tile = Tile(x,
+          y,
+          self.possibleColors[math.random(#self.possibleColors)],
+          math.random(math.min(self.level, 6)))
         tile.y = -32
         self.tiles[y][x] = tile
 

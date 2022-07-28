@@ -70,6 +70,37 @@ function PlayState:enter(params)
   self.scoreGoal = self.level * 1.25 * 1000
 end
 
+function PlayState:swapTiles(tile1, tile2, reverting)
+  reverting = reverting or false
+
+  -- swap grid positions
+  local tempX = tile1.gridX
+  local tempY = tile1.gridY
+
+  tile1.gridX = tile2.gridX
+  tile1.gridY = tile2.gridY
+
+  tile2.gridX = tempX
+  tile2.gridY = tempY
+
+  -- swap tile table positions
+  self.board.tiles[tile1.gridY][tile1.gridX] = tile1
+  self.board.tiles[tile2.gridY][tile2.gridX] = tile2
+
+  Timer.tween(0.1, {
+    [tile1] = { x = tile2.x, y = tile2.y },
+    [tile2] = { x = tile1.x, y = tile1.y }
+  }):finish(function()
+    if not reverting then
+      if not self.board:calculateMatches() then
+        self:swapTiles(tile2, tile1, true)
+      end
+    end
+    self:calculateMatches()
+  end)
+
+end
+
 local next = next
 function PlayState:update(dt)
   if love.keyboard.wasPressed('escape') then
@@ -113,39 +144,16 @@ function PlayState:update(dt)
       for _, tileTable in pairs(self.board.tiles) do
         for _, tile in pairs(tileTable) do
           if tile:wasClicked(x, y) then
-            -- print("mouse x, y: " .. tostring(x) .. ", " .. tostring(y))
-            -- print("tile.x, y: " .. tostring(tile.x) .. ", " .. tostring(tile.y))
-
             if not self.highlightedTile then
               self.highlightedTile = tile
             elseif self.highlightedTile == tile then
               self.highlightedTile = nil
             else
-              -- if the clicked tile is adjacent to the highlighted tile
               if self.board:adjacentTo(self.highlightedTile, tile) then
-                local newTile = tile
-
-                -- swap grid positions
-                local tempX = self.highlightedTile.gridX
-                local tempY = self.highlightedTile.gridY
-
-                self.highlightedTile.gridX = newTile.gridX
-                self.highlightedTile.gridY = newTile.gridY
-
-                newTile.gridX = tempX
-                newTile.gridY = tempY
-
-                -- swap tile table positions
-                self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] = self.highlightedTile
-                self.board.tiles[newTile.gridY][newTile.gridX] = newTile
-
-                Timer.tween(0.1, {
-                  [self.highlightedTile] = { x = newTile.x, y = newTile.y },
-                  [newTile] = { x = self.highlightedTile.x, y = self.highlightedTile.y }
-                }):finish(function()
-                  self:calculateMatches()
-                end)
-
+                self:swapTiles(self.highlightedTile, tile)
+                if not self.board:calculateMatches() then
+                  self:swapTiles(self.highlightedTile, tile)
+                end
                 self.highlightedTile = nil
               else
                 self.highlightedTile = tile
@@ -192,35 +200,7 @@ function PlayState:update(dt)
         gSounds['error']:play()
         self.highlightedTile = nil
       else
-
-        -- swap grid positions of tiles
-        local tempX = self.highlightedTile.gridX
-        local tempY = self.highlightedTile.gridY
-
-        local newTile = self.board.tiles[y][x]
-
-        self.highlightedTile.gridX = newTile.gridX
-        self.highlightedTile.gridY = newTile.gridY
-        newTile.gridX = tempX
-        newTile.gridY = tempY
-
-        -- swap tiles in the tiles table
-        self.board.tiles[self.highlightedTile.gridY][self.highlightedTile.gridX] =
-        self.highlightedTile
-
-        self.board.tiles[newTile.gridY][newTile.gridX] = newTile
-
-        -- tween coordinates between the two so they swap
-        Timer.tween(0.1, {
-          [self.highlightedTile] = { x = newTile.x, y = newTile.y },
-          [newTile] = { x = self.highlightedTile.x, y = self.highlightedTile.y }
-        })
-
-            -- once the swap is finished, we can tween falling blocks as needed
-            :finish(function()
-              self:calculateMatches()
-            end)
-
+        self:swapTiles(self.highlightedTile, self.board.tiles[y][x])
       end
     end
   end
