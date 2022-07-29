@@ -33,7 +33,7 @@ function Tile:init(x, y, color, variety)
   self.color = color
   self.variety = variety
 
-  self.shiny = math.random(10) == 10
+  self.shiny = math.random(100) == 100
 end
 
 function Tile:render(x, y)

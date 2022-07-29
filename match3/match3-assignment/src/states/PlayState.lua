@@ -39,6 +39,8 @@ function PlayState:init()
   self.score = 0
   self.timer = 60
 
+  self.moreMatches = true
+
   -- set our Timer class to turn cursor highlight on and off
   Timer.every(0.5, function()
     self.rectHighlighted = not self.rectHighlighted
@@ -70,7 +72,7 @@ function PlayState:enter(params)
   self.scoreGoal = self.level * 1.25 * 1000
 end
 
-function PlayState:swapTiles(tile1, tile2, reverting)
+function PlayState:swapTiles(tile1, tile2, tweening, reverting)
   reverting = reverting or false
 
   -- swap grid positions
@@ -87,18 +89,50 @@ function PlayState:swapTiles(tile1, tile2, reverting)
   self.board.tiles[tile1.gridY][tile1.gridX] = tile1
   self.board.tiles[tile2.gridY][tile2.gridX] = tile2
 
-  Timer.tween(0.1, {
-    [tile1] = { x = tile2.x, y = tile2.y },
-    [tile2] = { x = tile1.x, y = tile1.y }
-  }):finish(function()
-    if not reverting then
-      if not self.board:calculateMatches() then
-        self:swapTiles(tile2, tile1, true)
+  if tweening then
+    Timer.tween(0.2, {
+      [tile1] = { x = tile2.x, y = tile2.y },
+      [tile2] = { x = tile1.x, y = tile1.y }
+    }):finish(function()
+      if not reverting then
+        if not self.board:calculateMatches() then
+          self:swapTiles(tile2, tile1, true, true)
+        end
+      end
+      self:calculateMatches()
+      if not self:boardHasPotentialMatches() then
+        self.moreMatches = false
+      end
+    end)
+  end
+end
+
+function PlayState:swapWithMatchCheck(tile1, tile2)
+  self:swapTiles(tile1, tile2, false, false)
+  local match = self.board:hasMatch()
+  self:swapTiles(tile1, tile2, false, false)
+  return match
+end
+
+function PlayState:boardHasPotentialMatches()
+  local match = false
+  for y = 2, 7 do
+    for x = 2, 7 do
+      local currentTile = self.board.tiles[y][x]
+      local leftNeighbor = self.board.tiles[y][x - 1]
+      local rightNeighbor = self.board.tiles[y][x + 1]
+      local bottomNeighbor = self.board.tiles[y + 1][x]
+      local topNeighbor = self.board.tiles[y - 1][x]
+      match = self:swapWithMatchCheck(currentTile, leftNeighbor)
+          or self:swapWithMatchCheck(currentTile, rightNeighbor)
+          or self:swapWithMatchCheck(currentTile, bottomNeighbor)
+          or self:swapWithMatchCheck(currentTile, topNeighbor)
+      if match then
+        return true
       end
     end
-    self:calculateMatches()
-  end)
-
+  end
+  return false
 end
 
 local next = next
@@ -117,6 +151,18 @@ function PlayState:update(dt)
 
     gStateMachine:change('game-over', {
       score = self.score
+    })
+  end
+
+  if not self.moreMatches then
+    -- clear timers from prior PlayStates
+    Timer.clear()
+
+    gSounds['game-over']:play()
+
+    gStateMachine:change('game-over', {
+      score = self.score,
+      message = "No more matches!"
     })
   end
 
@@ -150,10 +196,7 @@ function PlayState:update(dt)
               self.highlightedTile = nil
             else
               if self.board:adjacentTo(self.highlightedTile, tile) then
-                self:swapTiles(self.highlightedTile, tile)
-                if not self.board:calculateMatches() then
-                  self:swapTiles(self.highlightedTile, tile)
-                end
+                self:swapTiles(self.highlightedTile, tile, true)
                 self.highlightedTile = nil
               else
                 self.highlightedTile = tile
@@ -200,7 +243,7 @@ function PlayState:update(dt)
         gSounds['error']:play()
         self.highlightedTile = nil
       else
-        self:swapTiles(self.highlightedTile, self.board.tiles[y][x])
+        self:swapTiles(self.highlightedTile, self.board.tiles[y][x], true)
       end
     end
   end

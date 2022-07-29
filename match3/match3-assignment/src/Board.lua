@@ -65,6 +65,55 @@ function Board:initializeTiles()
   end
 end
 
+function Board:hasMatch()
+  local matchCount = 0
+
+  -- horizontal matches
+  for y = 1, 8 do
+    local colorToMatch = self.tiles[y][1].color
+    matchCount = 1
+
+    for x = 2, 8 do
+      if self.tiles[y][x].color == colorToMatch then
+        matchCount = matchCount + 1
+        if matchCount == 3 then
+          print("BOARD HAS HORIZONTAL MATCH")
+          return true
+        end
+      else
+        colorToMatch = self.tiles[y][x].color
+        matchCount = 1
+        if x == 7 then
+          break
+        end
+      end
+    end
+  end
+
+  -- vertical matches
+  for x = 1, 8 do
+    local colorToMatch = self.tiles[1][x].color
+    matchCount = 1
+    for y = 2, 8 do
+      if self.tiles[y][x].color == colorToMatch then
+        matchCount = matchCount + 1
+        if matchCount == 3 then
+          print("BOARD HAS VERTICAL MATCH")
+          return true
+        end
+      else
+        colorToMatch = self.tiles[y][x].color
+        matchCount = 1
+        if y == 7 then
+          break
+        end
+      end
+    end
+  end
+
+  return false
+end
+
 --[[
     Goes left to right, top to bottom in the board, calculating matches by counting consecutive
     tiles of the same color. Doesn't need to check the last tile in every row or column if the 
