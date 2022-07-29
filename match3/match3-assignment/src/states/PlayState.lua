@@ -284,7 +284,7 @@ function PlayState:calculateMatches()
 
     -- tween new tiles that spawn from the ceiling over 0.25s to fill in
     -- the new upper gaps that exist
-    Timer.tween(0.25, tilesToFall):finish(function()
+    Timer.tween(0.5, tilesToFall):finish(function()
 
       -- recursively call function in case new matches have been created
       -- as a result of falling blocks once new blocks have finished falling
